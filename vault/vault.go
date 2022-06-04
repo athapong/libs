@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// GetSecretsByKubernetesAuth returns secrets from Vault using Kubernetes auth method
 func GetSecretsByKubernetesAuth(ctx context.Context, env Environment) (map[string]string, error) {
 	ctx, cancelContextFunc := context.WithCancel(ctx)
 	defer cancelContextFunc()
@@ -29,7 +30,7 @@ func GetSecretsByKubernetesAuth(ctx context.Context, env Environment) (map[strin
 	if env.KubernetesEnv.VaultDatabaseCredsFields == "" {
 		return nil, fmt.Errorf("the secret key does not provide")
 	}
-	
+
 	credFields := strings.Split(env.KubernetesEnv.VaultDatabaseCredsFields, ",")
 	for _, cred := range credFields {
 		value, err := vault.getSecretWithKubernetesAuth(secret, cred)
@@ -42,7 +43,7 @@ func GetSecretsByKubernetesAuth(ctx context.Context, env Environment) (map[strin
 	return values, nil
 }
 
-// To retrieve database credential from secret engine 'database'
+// GetCredentialsByAppRole retrieve database credential from secret engine 'database'
 func GetCredentialsByAppRole(ctx context.Context, env Environment) (Credentials, error) {
 	ctx, cancelContextFunc := context.WithCancel(ctx)
 	defer cancelContextFunc()
@@ -53,8 +54,8 @@ func GetCredentialsByAppRole(ctx context.Context, env Environment) (Credentials,
 			Address:             env.VaultAddress,
 			ApproleRoleID:       env.VaultApproleRoleID,
 			ApproleSecretIDFile: env.SecretIDEnv.VaultApproleSecretIDFile,
-			ApiKeyPath:          env.SecretIDEnv.VaultAPIKeyPath,
-			ApiKeyField:         env.SecretIDEnv.VaultAPIKeyField,
+			APIKeyPath:          env.SecretIDEnv.VaultAPIKeyPath,
+			APIKeyField:         env.SecretIDEnv.VaultAPIKeyField,
 		},
 	)
 	if err != nil {
@@ -72,6 +73,7 @@ func GetCredentialsByAppRole(ctx context.Context, env Environment) (Credentials,
 	return databaseCredentials, nil
 }
 
+// GetSecretsByAppRole retrieve secret from secret engine by AppRole
 func GetSecretsByAppRole(ctx context.Context, env Environment, creds ...string) (map[string]string, error) {
 	ctx, cancelContextFunc := context.WithCancel(ctx)
 	defer cancelContextFunc()
@@ -82,8 +84,8 @@ func GetSecretsByAppRole(ctx context.Context, env Environment, creds ...string) 
 			Address:             env.VaultAddress,
 			ApproleRoleID:       env.VaultApproleRoleID,
 			ApproleSecretIDFile: env.SecretIDEnv.VaultApproleSecretIDFile,
-			ApiKeyPath:          env.SecretIDEnv.VaultAPIKeyPath,
-			ApiKeyField:         env.SecretIDEnv.VaultAPIKeyField,
+			APIKeyPath:          env.SecretIDEnv.VaultAPIKeyPath,
+			APIKeyField:         env.SecretIDEnv.VaultAPIKeyField,
 		},
 	)
 	if err != nil {

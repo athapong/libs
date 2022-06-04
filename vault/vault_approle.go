@@ -80,7 +80,7 @@ func (v *Vault) login(ctx context.Context) (*api.Secret, error) {
 func (v *Vault) getSecretAPIKeys() (map[string]string, error) {
 	log.Println("getting secret api key from vault")
 
-	secret, err := v.client.Logical().Read(v.parameters.ApiKeyPath)
+	secret, err := v.client.Logical().Read(v.parameters.APIKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read secret: %w", err)
 	}
@@ -90,7 +90,7 @@ func (v *Vault) getSecretAPIKeys() (map[string]string, error) {
 		return nil, fmt.Errorf("malformed secret returned")
 	}
 
-	apiKeys := strings.Split(v.parameters.ApiKeyField, ",")
+	apiKeys := strings.Split(v.parameters.APIKeyField, ",")
 	if len(apiKeys) == 0 {
 		return nil, fmt.Errorf("the secret key does not provide")
 	}
