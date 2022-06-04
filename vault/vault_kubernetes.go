@@ -12,10 +12,7 @@ func newVaultKubernetesAuthClient(ctx context.Context, parameters vaultParameter
 	config := api.DefaultConfig() // modify for more granular configuration
 	config.Address = parameters.Address
 
-	client, err := api.NewClient(config)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to initialize vault client: %w", err)
-	}
+	client, _ := api.NewClient(config)
 
 	vault := &Vault{
 		client:     client,
@@ -26,7 +23,7 @@ func newVaultKubernetesAuthClient(ctx context.Context, parameters vaultParameter
 	// By default, Kubernetes will mount this to /var/run/secrets/kubernetes.io/serviceaccount/token
 	jwt, err := ioutil.ReadFile(parameters.ApproleJwtTokenFile)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to read file containing service account token: %w", err)
+		return vault, nil, fmt.Errorf("unable to read file containing service account token: %w", err)
 	}
 
 	params := map[string]interface{}{
@@ -37,10 +34,10 @@ func newVaultKubernetesAuthClient(ctx context.Context, parameters vaultParameter
 	// log in to Vault's Kubernetes auth method
 	resp, err := vault.client.Logical().Write("auth/kubernetes/login", params)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to log in with Kubernetes auth: %w", err)
+		return vault, nil, fmt.Errorf("unable to log in with Kubernetes auth: %w", err)
 	}
 	if resp == nil || resp.Auth == nil || resp.Auth.ClientToken == "" {
-		return nil, nil, fmt.Errorf("login response did not return client token")
+		return vault, nil, fmt.Errorf("login response did not return client token")
 	}
 
 	// now you will use the resulting Vault token for making all future calls to Vault
@@ -49,7 +46,7 @@ func newVaultKubernetesAuthClient(ctx context.Context, parameters vaultParameter
 	// get secret from Vault
 	secret, err := vault.client.Logical().Read(vault.parameters.DatabaseCredentialsPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to read secret: %w", err)
+		return vault, nil, fmt.Errorf("unable to read secret: %w", err)
 	}
 
 	return vault, secret, nil

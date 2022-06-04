@@ -26,11 +26,11 @@ func GetSecretsByKubernetesAuth(ctx context.Context, env Environment) (map[strin
 	}
 
 	values := make(map[string]string)
-	credFields := strings.Split(env.KubernetesEnv.VaultDatabaseCredsFields, ",")
-	if len(credFields) == 0 {
+	if env.KubernetesEnv.VaultDatabaseCredsFields == "" {
 		return nil, fmt.Errorf("the secret key does not provide")
 	}
-
+	
+	credFields := strings.Split(env.KubernetesEnv.VaultDatabaseCredsFields, ",")
 	for _, cred := range credFields {
 		value, err := vault.getSecretWithKubernetesAuth(secret, cred)
 		if err != nil {
